@@ -1,0 +1,190 @@
+:: StoryTitle
+d20
+
+
+:: StoryData
+{
+  "ifid": "7B279049-89E6-468D-84D0-EEB0DF299678",
+  "format": "SugarCube",
+  "format-version": "2.37.3",
+  "start": "StoryInit",
+  "zoom": 1
+}
+
+
+:: Home {"position":"150,150","size":"100,100"}
+당신의 상태
+
+++ 스텟 ++
+힘: <<= $player.stat.str>>
+민첩: <<= $player.stat.dex>>
+지능: <<= $player.stat.int>>
+의지: <<= $player.stat.wil>>
+행운: <<= $player.stat.luk>>
+
+++ 인벤토리 ++
+<<if $player.item.lenght !== 0>>
+<<= $player.item.join(', ')>>
+<<else>>
+비어있음.
+<</if>>
+가진 동전: <<= $player.hasCoin>>
+
+<<link "테이블 위의 Lockpick을 챙긴다.">>
+    <<set $player.item.push("lockpick")>>
+<</link>>
+
+[[상자깡|event.chest.init]]
+[[초기화|StoryInit]]
+
+
+:: StoryInit {"position":"0,150","size":"100,100"}
+<<set $player to {
+	stat: {
+    	str: 4,
+        dex: 4,
+        int: 4,
+        wil: 4,
+        luk: 4
+    },
+    item: [],
+    hasCoin: 0
+}>>
+<<set $eventInfo to {}>>
+
+<<script>>
+/% d20 함수 설정 %/
+setup.d20 = function(_stat = 0) {
+    const roll = Math.floor(Math.random() * 20) + 1;
+    return roll + _stat;
+};
+
+/% 아이템 체크 함수 %/
+setup.checkItem = function (_needItem, pass, fail) {
+    const _player = State.variables.player;
+
+    if (_player.item.includes(_needItem)) {
+        let _index = _player.item.indexOf(_needItem)
+        _player.item.splice(_index, 1)
+        return pass;
+    }
+    else {
+        return fail;
+    }
+};
+
+/% 주사위 체크 함수 %/
+setup.checkRoll = function(_stat = 0, target, pass, fail) {
+    const result = setup.d20(_stat);
+    return result >= target ? pass : fail;
+};
+
+/% 기술 체크 함수 %/
+setup.checkSkill = function (_stat = 0, needItem, target, pass, fail) {
+    const _player = State.variables.player;
+
+    if (_player.item.includes(needItem)) {
+        const result = setup.d20(_stat);
+        return result >= target ? pass : fail;
+    }
+    else {
+        return fail;
+    }
+};
+<</script>>
+<<goto Home>>
+
+
+:: event.chest.0 {"position":"300,0","size":"100,100"}
+<<set _nextPage to {
+    pass: "event.chest.1",
+    fail: "event.chest.2"
+}>>
+<<set _needOpen to {
+    item: "iron key",
+    str: 12,
+    dex: 5
+}>>
+<<if $eventInfo.isHere.chest0.isLocked == true >>
+상자 열기 이벤트를 통하여 d20 시스템을 테스트 해봅시다.
+당신의 앞에 잠긴 상자가 있습니다.
+
+<<link "1. 열쇠를 이용해 상자를 열어본다.">>
+    <<set _result to setup.checkItem(_needOpen.item, "event.chest.1", "event.chest.2")>>
+    <<goto _result>>
+<</link>>
+<<link "2. 상자를 힘으로 열어본다.">>
+    <<set _result to setup.checkRoll($player.stat.str, _needOpen.str, "event.chest.1", "event.chest.2")>>
+    <<goto _result>>
+<</link>>
+<<link "3. 상자의 자물쇠를 해제해보자.">>
+    <<set _result to setup.checkSkill($player.stat.dex, "lockpick", _needOpen.dex, "event.chest.1", "event.chest.2")>>
+    <<goto _result>>
+<</link>>
+<<else>>
+이런, 누군가 이미 상자를 열었군요.
+<</if>>
+
+[[돌아가기|Home]]
+
+
+:: event.chest.1 {"position":"300,150","size":"100,100"}
+<<set $player.hasCoin += $chest0.hasCoin>>
+<<set $chest0.hasCoin to 0>>
+<<set $eventInfo.isChestOpen -= 1>>
+상자를 열었다. 안에는 동전이 들어있었다.
+동전 10개를 얻었다.
+
+[[돌아가기|event.chest.0]]
+
+
+:: event.chest.2 {"position":"450,0","size":"100,100"}
+상자가 열리지 않았다.
+<<link "바닥에 떨어진 열쇠를 줍는다.">>
+    <<set $player.item.push("iron key")>>
+    <<goto "event.chest.0">>
+<</link>>
+
+[[돌아가기|event.chest.0]]
+
+
+:: event.chest.init {"position":"150,0","size":"100,100"}
+<<set $eventInfo to {
+    isHere: [
+        chest0: {
+            isLocked: true,
+            needUnlock: {
+                item: "iron key",
+                stat: {
+                    str: 12,
+                    dex: 5
+                }
+            }
+            hasItem: [],
+            hasCoin: 10
+        },
+        ground: {
+            hasItem: ["iron key"]
+        }
+    ]
+}>>
+<<set $ground to {
+    hasItem: "iron key"
+}>>
+<<set $chest0 to {
+    isLocked: 1,
+    needUnlock: {
+        item: "iron key",
+        str: 12,
+        dex: 5
+    }
+    hasCoin: 10
+}>>
+
+<<goto "event.chest.0">>
+
+
+:: StoryScript [script]
+/*
+여기가 어디?
+*/
