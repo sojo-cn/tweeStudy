@@ -94,7 +94,7 @@ setup.delItem = function (target) {
 
     // 해당하는 아이템이 없을 경우
     return false;
-}
+};
 
 // 분기 함수
 setup.divPath = function (nextPage, target, handlerOption = 0) {
@@ -144,7 +144,7 @@ setup.divPath = function (nextPage, target, handlerOption = 0) {
 
     const currentPage = Story.passage.title;
     return currentPage;
-}
+};
 
 
 :: Home {"position":"150,150","size":"100,100"}
