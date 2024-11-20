@@ -1,0 +1,275 @@
+:: StoryTitle
+CallMeMaybe
+
+
+:: StoryData
+{
+  "ifid": "D2F43FA2-6CFA-4718-9771-A414DB5833B8",
+  "format": "SugarCube",
+  "format-version": "2.37.3",
+  "start": "StoryInit",
+  "zoom": 1
+}
+
+
+:: StoryInit {"position":"575,225","size":"100,100"}
+<<set $dataGame to {
+  stat: ["str", "dex", "int", "wil", "luk"],
+  fac: {"Club", "Heart", "Diamond", "Spade"},
+  char: {},
+  facTitle: {
+    Spade: ["lv1", "lv2", "lv3", "lv4", "lv5"]
+  },
+  commTitle: {
+    ff: [],
+    fm: [],
+    mf: [],
+    mm: []
+  }
+}>>
+<<set $dataPlayer to {
+  age: 21,
+  gend: "m",
+  stat: {},
+  item: [],
+  hasCoin: 0,
+  fac: {},
+  rels: {}
+}>>
+<<set $eventInfo to {}>>
+<<set $isMsg to {}>>
+
+<<goto "Home">>
+
+
+:: Home {"position":"725,225","size":"100,100"}
+
+
+
+:: event.meetCPOfficer.init {"position":"875,225","size":"100,100"}
+
+
+
+:: event.visitCafe.init {"position":"725,375","size":"100,100"}
+
+
+
+:: StoryScript [script]
+// d20 함수
+setup.d20 = function (_stat = 0) {
+  const roll = Math.floor(Math.random() * 20) + 1;
+  return roll + _stat;
+}
+
+// 주사위 굴림 함수
+setup.checkRoll = function (target, _stat, _dataPlayer = State.variables.dataPlayer) {
+  // target에는 대상(물)을 넣어야 함
+  // _stat은 플레이어의 대상 stat 이름
+  const _info = State.variables.eventInfo;
+  const _tar = _info.isHere?.[target];  // 대상 정보 확인
+
+  // 대상이 없거나, 필요한 잠금 해제 정보가 없으면 실패 페이지로 이동
+  if (!_tar || !_tar.needUnlock?.stat?.[_stat]) {
+    return false;
+  }
+
+  const rqStat = _tar.needUnlock.stat[_stat];  // 요구 스탯 수치 가져오기
+  const playerStat = _dataPlayer.stat[_stat] || 0;  // 플레이어의 스탯 가져오기
+
+  const result = setup.d20(playerStat);  // d20 굴림
+  return result >= rqStat;
+}
+
+
+// 아이템 체크 함수
+setup.checkItem = function (target, _dataPlayer = State.variables.dataPlayer) {
+  const _info = State.variables.eventInfo;
+  const _tar = _info.isHere[target];
+
+  // 목표가 없는 경우 false
+  if (!_tar) {
+    return false;
+  }
+
+  // 필요 아이템 찾기
+  if (_tar.needUnlock?.item) {
+    const itemRequired = _tar.needUnlock.item;
+
+    if (_dataPlayer.item.includes(itemRequired)) {
+      return itemRequired;
+    }
+  }
+
+  return;
+}
+
+
+// 아이템 삭제 함수
+setup.delItem = function (target, _dataPlayer = State.variables.dataPlayer) {
+  // 아이템 배열이 유효한지 확인
+  if (!_dataPlayer.item || !Array.isArray(_dataPlayer.item)) {
+    return false;
+  }
+
+  // 배열에서 대상 아이템 찾기
+  const index = _dataPlayer.item.indexOf(target);
+  if (index !== -1) {
+    _dataPlayer.item.splice(index, 1);  // 아이템 제거
+    return;
+  }
+
+  // 해당하는 아이템이 없을 경우
+  return false;
+}
+
+
+// Faction 체크 함수
+setup.checkFac = function (handlerOption, _dataPlayer = State.variables.dataPlayer) {
+  if (_dataPlayer.rels.fac?.[handlerOption]) {
+    return true;
+  }
+
+  return false;
+}
+
+
+// 분기 함수
+setup.divPath = function (target, handlerOption = 0) {
+  // nextPage에는 해당 패시지에서 객체로 만들어야 함! 없으면 오류!
+  // target에는 대상을 넣어야함.
+  // handlerOption은 0이 기본. 0일때 아이템 삭제 안함, 1은 삭제.
+  //   stat이 들어가면 주사위 굴림, 
+  const _dataPlayer = State.variables.dataPlayer;
+  const _dataGame = State.variables.dataGame;
+  const _nextPage = State.variables.nextPage;
+
+  // stat 기반 선택
+  if (_dataGame.stat.includes(handlerOption)) {
+    const rollResult = setup.checkRoll(target, handlerOption, _dataPlayer);
+    
+    if (rollResult) {
+      const _nPg = _nextPage.pass.stat || _nextPage.pass;
+      return _nPg;
+    }
+    else {
+      const _nPg = _nextPage.fail.stat || _nextPage.fail;
+      return _nPg;
+    }
+  }
+
+  // fac 기반 선택
+  if (_dataGame.fac.includes(handlerOption)) {
+    const facResult = setup.checkFac(handlerOption, _dataPlayer);
+
+    if (facResult === true) {
+      const _nPg = _nextPage.pass.fac || _nextPage.pass;
+      return _nPg;
+    }
+    else {
+      const _nPg = _nextPage.fail.fac || _nextPage.fail;
+      return _nPg;
+    }
+  }
+
+  // handlerOption이 1일때, 아이템 확인 후 삭제
+  if (handlerOption === 1) {
+    const usedItem = setup.checkItem(target, _dataPlayer);
+    
+    if (_dataPlayer.item.includes(usedItem)) {
+      // _dataPlayer.item에 target이 있는 경우, 아이템 삭제
+      setup.delItem(usedItem, _dataPlayer);
+      
+      const _nPg = _nextPage.pass.usedItem || _nextPage.pass;
+      return _nPg;
+    }
+    else {
+      const _nPg = _nextPage.fail.usedItem || _nextPage.fail;
+      return _nPg;
+    }
+  }
+
+  // handlerOption = 0, 아이템 확인 후 진행. 삭제x
+  if (handlerOption === 0) {
+    if (_dataPlayer.item.includes(target)) {
+      const _nPg = _nextPage.pass.item || _nextPage.pass;
+      return _nPg;
+    }
+    else {
+      const _nPg = _nextPage.fail.item || _nextPage.fail;
+      return _nPg;
+    }
+  }
+
+  console.log(`divPath: false`);
+  // 아무 동작도 안되면 현재 패시지 리로딩
+  const currentPage = Story.passage.title;
+  return currentPage;
+}
+
+
+// 대화에서 플레이어에게 적합한 호칭을 사용하도록 하는 함수
+setup.getTitle = function (who) {
+  const _dataPlayer = State.variables.dataPlayer;
+  const _dataGame = State.variables.dataGame;
+  const _eventInfo = State.variables.eventInfo;
+
+  // param who가 실제하는지 체크
+  if (!_dataGame.char.includes(who) && _eventInfo.char.includes(who)) {
+    console.log(`Invalid who: ${who}`);
+    return false;
+  }
+
+  // who 데이터 가져오기
+  const _whoData = _eventInfo.char[who];
+  if (!_whoData) {
+    console.log(`No data found for who: ${who}`);
+    return false;
+  }
+
+  // _dataPlayer.fac에서 _whoData.fac와 동일한 key의 값 가져오기
+  const _playerFac = _dataPlayer.fac;
+  const _whoFac = _whoData.fac;
+  let _playerTitle = null;
+  
+  if (_playerFac && _whoFac in _playerFac) {
+    const _pFacLv = _playerFac[_whoFac];
+    if (_pFacLv && _pFacLv > 0) {
+      // fac이 일치할 경우 title 설정
+      _playerTitle = _dataGame.facTitle[_whoFac]?.[_pFacLv - 1] ?? null;
+    }
+  }
+
+  // fac 값이 없거나 일치하지 않은 경우
+  if (!_playerTitle) {
+    const _playerGend = _dataPlayer.gend;
+    const _whoGend = _whoData.gend;
+
+    // 성별에 따른 호칭 설정
+    if (_whoGend === "f") {
+      if (_playerGend === "m") {
+        // _dataGame.commTitle.fm에서 기본 인덱스 0 사용.
+        _playerTitle = _dataGame.commTitle.fm[0];
+      } else if (_playerGend === "f") {
+        // _dataGame.commTitle.ff에서 기본 인덱스 0 사용.
+        _playerTitle = _dataGame.commTitle.ff[0];
+      }
+    } 
+
+    if (_whoGend === "m") {
+      if (_playerGend === "f") {
+        _playerTitle = _dataGame.commTitle.mf[0];
+      } else if (_playerGend === "m") {
+        _playerTitle = _dataGame.commTitle.mm[0];
+      }
+    }
+  }
+
+  // title 반환
+  if (_playerTitle) {
+    return _playerTitle;
+  } else {
+    console.log(`No suittable TITLE found.`);
+    return false;
+  }
+}
+

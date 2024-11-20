@@ -35,7 +35,7 @@ d20
 setup.d20 = function(_stat = 0) {
     const roll = Math.floor(Math.random() * 20) + 1;
     return roll + _stat;
-};
+}
 
 // 주사위 굴림 함수
 setup.checkRoll = function(target, _stat) {
@@ -45,7 +45,7 @@ setup.checkRoll = function(target, _stat) {
 
     // 대상이 없거나, 필요한 잠금 해제 정보가 없으면 실패 페이지로 이동
     if (!_tar || !_tar.needUnlock?.stat?.[_stat]) {
-        return nextPage.fail;
+        return false;
     }
 
     const rqStat = _tar.needUnlock.stat[_stat];  // 요구 스탯 수치 가져오기
@@ -53,7 +53,7 @@ setup.checkRoll = function(target, _stat) {
 
     const result = setup.d20(playerStat);  // d20 굴림
     return result >= rqStat;
-};
+}
 
 // 아이템 체크 함수
 setup.checkItem = function (target) {
@@ -74,7 +74,7 @@ setup.checkItem = function (target) {
     }
 
     return;
-};
+}
 
 // 아이템 삭제 함수
 setup.delItem = function (target) {
@@ -94,7 +94,7 @@ setup.delItem = function (target) {
 
     // 해당하는 아이템이 없을 경우
     return false;
-};
+}
 
 // 분기 함수
 setup.divPath = function (nextPage, target, handlerOption = 0) {
@@ -118,7 +118,7 @@ setup.divPath = function (nextPage, target, handlerOption = 0) {
     // handlerOption이 1이라면 아이템 확인 후 삭제
     if (handlerOption === 1) {
         const usedItem = setup.checkItem(target);
-        console.log(`whst is target: ` + target + `, usedItem: ` + usedItem);
+        console.log(`what is target: ` + target + `, usedItem: ` + usedItem);
         
         if (_player.item.includes(usedItem)) {
             // 성공한 경우, 아이템 삭제
@@ -144,7 +144,7 @@ setup.divPath = function (nextPage, target, handlerOption = 0) {
 
     const currentPage = Story.passage.title;
     return currentPage;
-};
+}
 
 
 :: Home {"position":"150,150","size":"100,100"}
