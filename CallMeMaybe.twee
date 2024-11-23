@@ -21,9 +21,9 @@ CallMeMaybe
     Spade: ["lv1", "lv2", "lv3", "lv4", "lv5"]
   },
   commTitle: {
-    ff: [],
-    fm: [],
-    mf: [],
+    ff: ["ff0", "ff1", "ff2", "ff3", "ff4"],
+    fm: ["fm0", "fm1", "fm2", "fm3", "fm4"],
+    mf: ["mf0", "mf1", "mf2", "mf3", "mf4"],
     mm: ["꼬마야", "너", "형", "형님", "아저씨"]
   }
 }>>
