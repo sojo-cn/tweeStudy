@@ -15,7 +15,7 @@ CallMeMaybe
 :: StoryInit {"position":"575,225","size":"100,100"}
 <<set $dataGame to {
   stat: ["str", "dex", "int", "wil", "luk"],
-  fac: {"Club", "Heart", "Diamond", "Spade"},
+  fac: ["Club", "Heart", "Diamond", "Spade"],
   char: {},
   facTitle: {
     Spade: ["lv1", "lv2", "lv3", "lv4", "lv5"]
@@ -43,15 +43,23 @@ CallMeMaybe
 
 
 :: Home {"position":"725,225","size":"100,100"}
+당신의 상태
+나이: <<= $dataPlayer.age>>
+성별: <<= $dataPlayer.gend>>
+소속: <<= Object.values($dataPlayer.fac).join(', ')>>
+++ 인벤토리 ++
+<<= Object.values($dataPlayer.item).join(', ')>>
+￠<<= $dataPlayer.hasCoin>>
 
 
-
-:: event.meetCPOfficer.init {"position":"875,225","size":"100,100"}
-
-
-
-:: event.visitCafe.init {"position":"725,375","size":"100,100"}
-
+/% 이벤트 페이지 들어가기 전, event.init을 통해 관련 정보들을 저장하거나 불러와야 함. %/
+:: event.init {"position":"875,225","size":"100,100"}
+<<set eventInfo to {
+  // 여기에 age, gend, fac 등등 npc 관련 정보 입력
+  someChar: {}
+  // 그 외에 이벤트 진행에 필요한 아이템이나 상황들도 입력
+}>>
+<<set isMsg to setup.getTitle(eventInfo.someChar)>>
 
 
 :: StoryScript [script]
@@ -125,7 +133,7 @@ setup.delItem = function (target, _dataPlayer = State.variables.dataPlayer) {
 
 // Faction 체크 함수
 setup.checkFac = function (handlerOption, _dataPlayer = State.variables.dataPlayer) {
-  if (_dataPlayer.rels.fac?.[handlerOption]) {
+  if (_dataPlayer.fac?.[handlerOption]) {
     return true;
   }
 

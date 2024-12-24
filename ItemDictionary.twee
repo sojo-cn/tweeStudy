@@ -1,0 +1,93 @@
+:: StoryTitle
+ItemDictionary
+
+
+:: StoryData
+{
+  "ifid": "83457633-046B-40C2-BA47-D386C0EF1226",
+  "format": "SugarCube",
+  "format-version": "2.37.3",
+  "start": "StoryInit",
+  "zoom": 1
+}
+
+
+:: Dictionary {"position":"625,175","size":"100,100"}
++++ 아이템 도감 +++
+<<set $displayIndex to $indexDict[$indexPage]>>
+<<print $itemDict[$displayIndex].name>>
+종류: <<print $itemDict[$displayIndex].type>>
+설명: <<print $itemDict[$displayIndex].info>>
+<<print $itemDict[$displayIndex].cost>>골드
+
+
+[[도감 덮기|Home]]
+
+<div class="btm-container">
+	<<button "이전">>
+    	<<if $indexPage is 0>>
+      <<else>>
+			  <<set $indexPage to $indexPage -1>>
+    		<<run Engine.play(State.passage)>>
+      <</if>>
+	<</button>>
+	<span id="pageIndex"><<print $indexPage +1>>/<<print $totalPage>></span>
+	<<button "다음">>
+    	<<set $nextPage to $totalPage -1>>
+    	<<if $indexPage is $nextPage>>
+      <<else>>
+  			<<set $indexPage to $indexPage +1>>
+    		<<run Engine.play(State.passage)>>
+      <</if>>
+	<</button>>
+</div>
+
+
+:: Home {"position":"500,300","size":"100,100"}
+
+책상 위에 아이템 도감이 있습니다.
+
+[[아이템 도감 확인하기|Dictionary]]
+
+<<set $indexDict to Object.keys($itemDict)>>
+<<set $totalPage to Object.keys($itemDict).length>>
+<<set $indexPage to 0>>
+
+
+:: StoryInit {"position":"500,175","size":"100,100"}
+<<set $itemDict to {
+  ironSword: {
+    name: "철검",
+    type: "근접 무기",
+    info: "철로 만들어진 조잡한 검입니다.",
+    cost: 150
+  },
+  woodenShield: {
+    name: "나무 방패",
+    type: "방어구",
+    info: "나무로 만들어진 방패입니다.",
+    cost: 100
+  },
+  magicRod: {
+  	name: "마술지팡이",
+  	type: "마술 촉매",
+  	info: "마법을 사용하기 위한 지팡이입니다.",
+    cost: 250
+  }
+};
+>>
+
+
+<<goto Home>>
+
+
+:: StoryStylesheet [stylesheet]
+.btm-container {
+  display: flex;
+  align-items: center;
+}
+
+.btm-container button,
+.btm-container #pageIndex {
+  margin: 0 5px;
+}
