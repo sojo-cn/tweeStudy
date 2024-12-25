@@ -1,0 +1,26 @@
+:: StoryTitle
+BattleStage
+
+
+:: StoryData
+{
+  "ifid": "1405BF0D-F295-4E32-9E7F-C08068414CEB",
+  "format": "SugarCube",
+  "format-version": "2.37.3",
+  "start": "StoryInit",
+  "zoom": 1
+}
+
+
+:: StoryInit {"position":"500,175","size":"100,100"}
+<<set  $dataGame to {
+  stat: ["str", "dex", "int", "wil", "luk"]
+}>>
+
+
+:: StoryScript [script]
+/**/
+
+
+
+:: StoryStylesheet [stylesheet]
